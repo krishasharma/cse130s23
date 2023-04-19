@@ -1,27 +1,21 @@
-EXECBIN = memory
-SOURCES = $(wildcard *.c)
-OBJECTS = $(SOURCES: %.c=%.o)
-FORMATS = $(SOURCES:%.c=%fmt)
 
-CC = clang
-FORMAT = clang-format
-CFLAGS = -Wall -Wextra -Wstrict-prototypes -Werror -pedantic
+CC = clang 
+CFLAGS = -Wall -Wextra -Wstrict-prototypes -Werror -pedantic -g
+HERA = memory.o 
+ZEUS = --leak-check=full --show-leak-kinds=all
 
-.PHONY: all clean format 
+.PHONY: all scan-build valgrind 
 
-all: $(EXECBIN) 
+all: memory
 
-$(EXECBIN): $(OBJECTS)
-	$(CC) -o $@ $^
+memory: $(HERA) memory.o
+	$(CC) $(CFLAGS) -c memory $(HERA)
 
-%.o : %.c 
-	$(CC) $(CFLAGS) -c $<
+memory.o: memory.c
+	$(CC) $(CFLAGS) -c memory.c
 
 clean: 
-	rm -f memory *.o
+	rm -f *.o memory 
 
-format: $(FORMATS)
-
-%.fmt: %.c
-	$(FORMAT) -i $<
-	touch $@
+format: 
+	clang-format -i -style=file *.[ch]
