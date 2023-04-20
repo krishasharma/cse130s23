@@ -19,3 +19,6 @@ Constriants:
 	memory must be written using the 'C' programming language (not C++)
 	memory cannot use the following functions from the 'C' stdio.h library: fwrite, fread, variants of put (i.e., fputc, putc_unlocked, putchar, putchar_unlocked, and putw), and get (i.e., fgetc, getc, getc_unlocked, getchar, getchar_unlocked, getline, and getw).
 	memory cannot use functions, like system(3) to execute external programs
+
+Functionality: 
+	The get() function works as intended; however, I did not have enough time to complete the set() function to the required specifications. I did my best attempt at set, although it does not work as intended. 
