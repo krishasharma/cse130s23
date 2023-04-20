@@ -1,21 +1,17 @@
-
 CC = clang 
-CFLAGS = -Wall -Wextra -Wstrict-prototypes -Werror -pedantic -g
-HERA = memory.o 
-ZEUS = --leak-check=full --show-leak-kinds=all
+CFLAGS = -Wall -Wpedantic -Werror -Wextra 
+.PHONY: all valgrind 
 
-.PHONY: all scan-build valgrind 
+all: memory 
 
-all: memory
-
-memory: $(HERA) memory.o
-	$(CC) $(CFLAGS) -c memory $(HERA)
+memory: memory.o
+	$(CC) -o memory memory.o 
 
 memory.o: memory.c
 	$(CC) $(CFLAGS) -c memory.c
 
 clean: 
-	rm -f *.o memory 
+	rm -f memory *.o 
 
 format: 
-	clang-format -i -style=file *.[ch]
+	clang-format -i -style=file memory.c
