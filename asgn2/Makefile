@@ -1,18 +1,28 @@
-CC = clang 
-CFLAGS = -Wall -Wpedantic -Werror -Wextra -g  
-.PHONY: all valgrind 
+CC = clang
+CFLAGS = -Wall -Wpedantic -Werror -Wextra
+REMOVE = rm -f
 
-all: httpserver 
+ALL_SOURCE = $(wildcard *.c)
+COMMON_SOURCE = ${shell grep -L "int main(" ${ALL_SOURCE}}
+COMMON_OBJECT = $(COMMON_SOURCE:%.c=%.o)
+EXECS = httpserver
 
-httpserver: httpserver.o
-	$(CC) -o httpserver httpserver.o 
+.PHONY: all clean debug GDB
 
-httpserver.o: httpserver.c
-	$(CC) $(CFLAGS) -c httpserver.c
+all: $(EXECS)
 
-clean: 
-	rm -f httpserver *.o 
+clean:
+	$(REMOVE) $(EXECS) *.o
 
-format: 
-	clang-format -i -style=file httpserver.c
+GDB: CFLAGS += -g
+GDB: clean all
 
+$(EXECS): %: %.o $(COMMON_OBJECT)
+	$(CC) -o $@ $^
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
+
+cleanScript:
+	$(REMOVE) *.txt 
+       
