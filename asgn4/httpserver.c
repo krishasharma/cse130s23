@@ -7,8 +7,8 @@
 #include <netinet/in.h>
 
 #define MAX_REQUEST_LEN 1024
-#define MAX_URI_LEN 256
-#define MAX_LOG_LEN 512
+#define MAX_URI_LEN     256
+#define MAX_LOG_LEN     512
 #define DEFAULT_THREADS 4
 
 typedef struct {
@@ -49,7 +49,8 @@ void log_entry(const char *operation, const char *uri, int status_code, const ch
     int log_index = num_requests++;
     audit_log[log_index] = entry;
 
-    fprintf(stderr, "%s,%s,%d,%s\n", entry.operation, entry.uri, entry.status_code, entry.request_id);
+    fprintf(
+        stderr, "%s,%s,%d,%s\n", entry.operation, entry.uri, entry.status_code, entry.request_id);
 
     pthread_mutex_unlock(&log_mutex);
 }
@@ -69,7 +70,7 @@ void process_request(Request *request) {
 }
 
 void *worker_thread(void *arg) {
-    (void)arg; // Cast arg
+    (void) arg; // Cast arg
     while (1) {
         sem_wait(&thread_semaphore);
         pthread_mutex_lock(&queue_mutex);
@@ -95,12 +96,13 @@ void *worker_thread(void *arg) {
 }
 
 void *dispatcher_thread(void *arg) {
-    int server_socket = *(int *)arg;
+    int server_socket = *(int *) arg;
     struct sockaddr_in client_address;
     socklen_t client_address_len = sizeof(client_address);
 
     while (1) {
-        int client_socket = accept(server_socket, (struct sockaddr *)&client_address, &client_address_len);
+        int client_socket
+            = accept(server_socket, (struct sockaddr *) &client_address, &client_address_len);
 
         pthread_mutex_lock(&queue_mutex);
 
@@ -127,19 +129,15 @@ int main(int argc, char *argv[]) {
 
     while ((opt = getopt(argc, argv, "t:")) != -1) {
         switch (opt) {
-            case 't':
-                num_threads = atoi(optarg);
-                break;
-            default:
-                fprintf(stderr, "Usage: ./httpserver [-t threads] <port>\n");
-                return 1;
+        case 't': num_threads = atoi(optarg); break;
+        default: fprintf(stderr, "Usage: ./httpserver [-t threads] <port>\n"); return 1;
         }
     }
 
     port = atoi(argv[optind]);
 
-    request_queue = (Request *)malloc(sizeof(Request) * MAX_REQUEST_LEN);
-    audit_log = (LogEntry *)malloc(sizeof(LogEntry) * MAX_REQUEST_LEN);
+    request_queue = (Request *) malloc(sizeof(Request) * MAX_REQUEST_LEN);
+    audit_log = (LogEntry *) malloc(sizeof(LogEntry) * MAX_REQUEST_LEN);
 
     pthread_mutex_init(&log_mutex, NULL);
     pthread_mutex_init(&queue_mutex, NULL);
@@ -147,7 +145,7 @@ int main(int argc, char *argv[]) {
 
     sem_init(&thread_semaphore, 0, 0);
 
-    pthread_t *worker_threads = (pthread_t *)malloc(sizeof(pthread_t) * num_threads);
+    pthread_t *worker_threads = (pthread_t *) malloc(sizeof(pthread_t) * num_threads);
 
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == -1) {
@@ -160,7 +158,7 @@ int main(int argc, char *argv[]) {
     server_address.sin_port = htons(port);
     server_address.sin_addr.s_addr = INADDR_ANY;
 
-    if (bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address)) == -1) {
+    if (bind(server_socket, (struct sockaddr *) &server_address, sizeof(server_address)) == -1) {
         perror("bind");
         return 1;
     }
