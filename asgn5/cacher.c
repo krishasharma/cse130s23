@@ -3,18 +3,18 @@
 #include <string.h>
 
 typedef struct {
-    char *key;
-    int valid;
-    int referenced;
+    char *key; // Key for cache item
+    int valid; // Flag indicating if the item is valid
+    int referenced; // Flag indicating if the item has been referenced
 } CacheItem;
 
 typedef struct {
-    int size;
-    char policy;
-    int capacityMisses;
-    int compulsoryMisses;
-    int currentIndex;
-    CacheItem *cacheArray;
+    int size; // Size of the cache
+    char policy; // Policy for cache eviction (FIFO, LRU, or Clock)
+    int capacityMisses; // Number of capacity misses
+    int compulsoryMisses; // Number of compulsory misses
+    int currentIndex; // Current index for eviction in Clock policy
+    CacheItem *cacheArray; // Array to store cache items
 } Cache;
 
 void initializeCache(Cache *cache, int size, char policy) {
@@ -24,7 +24,10 @@ void initializeCache(Cache *cache, int size, char policy) {
     cache->compulsoryMisses = 0;
     cache->currentIndex = 0;
 
+    // Allocate memory for the cache array
     cache->cacheArray = (CacheItem *) malloc(size * sizeof(CacheItem));
+
+    // Initialize each cache item
     for (int i = 0; i < size; i++) {
         cache->cacheArray[i].key = NULL;
         cache->cacheArray[i].valid = 0;
@@ -44,6 +47,7 @@ void evictItemLRU(Cache *cache) {
     int lruIndex = 0;
     int minRef = cache->cacheArray[0].referenced;
 
+    // Find the least-recently used item
     for (int i = 1; i < cache->size; i++) {
         if (cache->cacheArray[i].referenced < minRef) {
             lruIndex = i;
@@ -75,6 +79,7 @@ void evictItemClock(Cache *cache) {
 }
 
 int checkCache(Cache *cache, char *item) {
+    // Check if the item is present in the cache
     for (int i = 0; i < cache->size; i++) {
         if (cache->cacheArray[i].valid && strcmp(cache->cacheArray[i].key, item) == 0) {
             cache->cacheArray[i].referenced = 1;
@@ -86,6 +91,8 @@ int checkCache(Cache *cache, char *item) {
 
 void addToCache(Cache *cache, char *item) {
     int inserted = 0;
+
+    // Find an empty slot in the cache to insert the item
     for (int i = 0; i < cache->size; i++) {
         if (!cache->cacheArray[i].valid) {
             cache->cacheArray[i].key = item;
@@ -97,11 +104,15 @@ void addToCache(Cache *cache, char *item) {
 
     if (!inserted) {
         cache->capacityMisses++;
+
+        // Evict an item based on the cache policy
         switch (cache->policy) {
         case 'F': evictItemFIFO(cache); break;
         case 'L': evictItemLRU(cache); break;
         case 'C': evictItemClock(cache); break;
         }
+
+        // Insert the item into the cache after eviction
         for (int i = 0; i < cache->size; i++) {
             if (!cache->cacheArray[i].valid) {
                 cache->cacheArray[i].key = item;
@@ -118,8 +129,6 @@ int main(int argc, char *argv[]) {
     int cacheSize = 0;
     char policy = 'F';
 
-    //int compulsory_misses = 0;
-    //int capacity_misses = 0;
     if (argc < 2 || argc > 4) {
         fprintf(stderr, "Invalid command line arguments. Usage: . /cacher [-N <poilcy]\n");
         return 1;
